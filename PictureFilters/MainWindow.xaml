@@ -1,0 +1,152 @@
+﻿<Window x:Class="PictureFilters.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:toolkit="clr-namespace:System.Windows.Controls.DataVisualization;assembly=System.Windows.Controls.DataVisualization.Toolkit"
+        xmlns:charts="clr-namespace:System.Windows.Controls.DataVisualization.Charting;assembly=System.Windows.Controls.DataVisualization.Toolkit"
+        xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
+        xmlns:local="clr-namespace:PictureFilters"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="350" Width="525" WindowState="Maximized">
+    <Window.Resources>
+        <Style x:Key="DataPointStyle" TargetType="charts:LineDataPoint">
+            <Setter Property="BorderBrush" Value="White" />
+            <Setter Property="BorderThickness" Value="0.05"/>
+            <Setter Property="Template" Value="{x:Null}"/>
+        </Style>
+        <Style x:Key="RedDataStyle" TargetType="charts:LineDataPoint" BasedOn="{StaticResource DataPointStyle}">
+            <Setter Property="Background" Value="Red" />
+        </Style>
+        <Style x:Key="GreenDataStyle" TargetType="charts:LineDataPoint" BasedOn="{StaticResource DataPointStyle}">
+            <Setter Property="Background" Value="Green" />
+        </Style>
+        <Style x:Key="BlueDataStyle" TargetType="charts:LineDataPoint" BasedOn="{StaticResource DataPointStyle}">
+            <Setter Property="Background" Value="Blue" />
+        </Style>
+        <Style x:Key="DashedPolyLine" TargetType="{x:Type Polyline}">
+
+            <Setter Property="StrokeThickness" Value="1" />
+  
+        </Style>
+        <Style x:Key ="ChartMajorTickMarkStyle" TargetType="Line">
+            <Setter Property="Visibility" Value="Collapsed" />
+        </Style>
+        <local:ComparisonConverter x:Key="comparisonConverter"/>
+    </Window.Resources>
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="300"/>
+            <ColumnDefinition Width="200"/>
+            <ColumnDefinition />
+        </Grid.ColumnDefinitions>
+        <Grid Grid.Column="0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition />
+            </Grid.RowDefinitions>
+            <WrapPanel Grid.Row="0">
+                <Button  Width="100" Height="50" Click="LoadImage_Click" VerticalAlignment="Center" HorizontalAlignment="Center">Załaduj obraz</Button>
+                
+
+            </WrapPanel>
+            <GroupBox Header="Obszar zastosowania filtra" Grid.Row="1" Margin="15">
+                <StackPanel>
+                    <Grid Margin="15">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition />
+                            <ColumnDefinition />
+                        </Grid.ColumnDefinitions>
+                        <RadioButton  Grid.Column="0" GroupName="filterArea" Checked="RadioButton_Checked" IsChecked="{Binding Path=FilterArea, Converter={StaticResource comparisonConverter}, ConverterParameter={x:Static local:FilterArea.whole}}">Cały obraz</RadioButton>
+                        <Button Grid.Column="1" Click="ApplyFilter_Click" Content="Zastosuj"/>
+                    </Grid>
+                    <Grid Margin="15">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition />
+                            <ColumnDefinition />
+                        </Grid.ColumnDefinitions>
+                        <RadioButton Grid.Column="0" GroupName="filterArea" Checked="RadioButton_Checked" IsChecked="{Binding Path=FilterArea, Converter={StaticResource comparisonConverter}, ConverterParameter={x:Static local:FilterArea.brush}}">Pędzel kołowy</RadioButton>
+                        <Slider Grid.Column="1" Value="{Binding Path=BrushRadius}" Minimum="2" Maximum="50"></Slider>
+                    </Grid>
+                    <Grid Margin="15">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition />
+                            <ColumnDefinition />
+                        </Grid.ColumnDefinitions>
+                        <RadioButton Grid.Column="0" GroupName="filterArea" Checked="RadioButton_Checked" IsChecked="{Binding Path=FilterArea, Converter={StaticResource comparisonConverter}, ConverterParameter={x:Static local:FilterArea.polygon}}">Wielokąt</RadioButton>
+                        <Button Grid.Column="1" Click="DeletePolygon_Click">Wyczyść</Button>
+                    </Grid>
+                </StackPanel>
+            </GroupBox>
+            <GroupBox Header="Wybór filtra macierzowego" Grid.Row="2" Margin="15">
+                <StackPanel Name="filterStackpanel">
+                    <RadioButton Margin="5" GroupName="filter" Checked="RadioButton_Checked_1" IsChecked="{Binding Path=Filter.FilterType, Converter={StaticResource comparisonConverter}, ConverterParameter={x:Static local:FilterType.identical}}">Identyczność</RadioButton>
+                    <RadioButton Margin="5" GroupName="filter" Checked="RadioButton_Checked_1" IsChecked="{Binding Path=Filter.FilterType, Converter={StaticResource comparisonConverter}, ConverterParameter={x:Static local:FilterType.blur}}">Rozmycie</RadioButton>
+                    <RadioButton Margin="5" GroupName="filter" Checked="RadioButton_Checked_1" IsChecked="{Binding Path=Filter.FilterType, Converter={StaticResource comparisonConverter}, ConverterParameter={x:Static local:FilterType.sharpen}}">Wyostrzenie</RadioButton>
+                    <RadioButton Margin="5" GroupName="filter" Checked="RadioButton_Checked_1" IsChecked="{Binding Path=Filter.FilterType, Converter={StaticResource comparisonConverter}, ConverterParameter={x:Static local:FilterType.emboss}}">Płaskorzeźba</RadioButton>
+                    <RadioButton Margin="5" GroupName="filter" Checked="RadioButton_Checked_1" IsChecked="{Binding Path=Filter.FilterType, Converter={StaticResource comparisonConverter}, ConverterParameter={x:Static local:FilterType.edges}}">Wykrywanie krawędzi</RadioButton>
+                    <RadioButton Margin="5" GroupName="filter" Checked="RadioButton_Checked_1" IsChecked="{Binding Path=Filter.FilterType, Converter={StaticResource comparisonConverter}, ConverterParameter={x:Static local:FilterType.custom}}">Własny</RadioButton>
+                    <Grid x:Name="MatrixGrid" Margin="5" >
+                        <Grid.RowDefinitions>
+                            <RowDefinition/>
+                            <RowDefinition/>
+                            <RowDefinition/>
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition/>
+                            <ColumnDefinition/>
+                            <ColumnDefinition/>
+                        </Grid.ColumnDefinitions>
+                    </Grid>
+                    <!--<Grid Margin="5" >
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition />
+                            <ColumnDefinition />
+                        </Grid.ColumnDefinitions>
+                        <Label Grid.Column="0">Dzielnik</Label>
+                        <xctk:DoubleUpDown Grid.Column="1" Increment="0.05" Name="doubleUpDown" ></xctk:DoubleUpDown>
+                    </Grid>-->
+                </StackPanel>
+            </GroupBox>
+        </Grid>
+        <Grid Grid.Column="1">
+            <Grid.RowDefinitions>
+                <RowDefinition/>
+                <RowDefinition/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+            
+            <charts:Chart Grid.Row="0">
+                <charts:Chart.LegendStyle>
+                    <Style TargetType="toolkit:Legend">
+                        <Setter Property="Width" Value="0" />
+                    </Style>
+                </charts:Chart.LegendStyle>
+                <charts:LineSeries Title="Red" DependentValuePath="Value" IndependentValuePath="Key" ItemsSource="{Binding Path=Histogram.Red}" DataPointStyle="{StaticResource RedDataStyle}" PolylineStyle="{StaticResource DashedPolyLine}">
+                    
+                </charts:LineSeries>
+            </charts:Chart>
+            
+            <charts:Chart Grid.Row="1">
+                <charts:Chart.LegendStyle>
+                    <Style TargetType="toolkit:Legend">
+                        <Setter Property="Width" Value="0" />
+                    </Style>
+                </charts:Chart.LegendStyle>
+                <charts:LineSeries Title="Green" DependentValuePath="Value" IndependentValuePath="Key" ItemsSource="{Binding Path=Histogram.Green}" DataPointStyle="{StaticResource GreenDataStyle}" PolylineStyle="{StaticResource DashedPolyLine}"/>
+            </charts:Chart>
+            
+            <charts:Chart Grid.Row="2">
+                <charts:Chart.LegendStyle>
+                    <Style TargetType="toolkit:Legend">
+                        <Setter Property="Width" Value="0" />
+                    </Style>
+                </charts:Chart.LegendStyle>
+                <charts:LineSeries Title="Blue" DependentValuePath="Value" IndependentValuePath="Key" ItemsSource="{Binding Path=Histogram.Blue}" DataPointStyle="{StaticResource  BlueDataStyle}" PolylineStyle="{StaticResource DashedPolyLine}"/>
+            </charts:Chart>
+        </Grid>
+        <Image Name="MainImage" Grid.Column="2" MouseLeftButtonDown="Image_MouseLeftButtonDown" MouseMove="Image_MouseMove" MouseLeftButtonUp="MainImage_MouseLeftButtonUp" Stretch="None" Source="{Binding Path=Image}" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="10"/>
+
+    </Grid>
+</Window>
